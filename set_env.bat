@@ -24,5 +24,5 @@ echo.
 echo Setup complete! To activate later, run:
 echo   venv\Scripts\activate
 echo To run the app:
-echo   python src/main.py
+echo   python main.py
 pause
