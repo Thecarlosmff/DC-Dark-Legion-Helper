@@ -3,6 +3,8 @@ Currently a bleed simulator for DC Dark Legion.
 
 ## [Download](https://github.com/Thecarlosmff/DC-Dark-Legion-Helper/releases) 
 
+ ![Help](Help.png)
+ 
 ## Setup (For devs)
 
 1. **Windows**  
