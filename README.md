@@ -1,7 +1,9 @@
 # DC-Dark-Legion-Helper
 Currently a bleed simulator for DC Dark Legion.
 
-## Setup (Easy Mode)
+## [Download](https://github.com/Thecarlosmff/DC-Dark-Legion-Helper/releases) 
+
+## Setup (For devs)
 
 1. **Windows**  
    - Double-click `setup_env_windows.bat`  
@@ -21,7 +23,15 @@ Currently a bleed simulator for DC Dark Legion.
      python main.py
      ```
 
-## Notes
+### Notes
 - First run will set everything up.  
 - Next time, just activate the environment and run the app.  
 - If Python was already installed, it won’t reinstall.  
+
+
+## How to create an executable file
+
+   ```bash
+   pip install PyInstaller
+   pyinstaller --noconsole --onefile -F main.py
+   ```
