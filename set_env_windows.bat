@@ -22,7 +22,7 @@ pip install -r requirements.txt
 
 echo.
 echo Setup complete! To activate later, run:
-echo   venv\Scripts\activate
+echo   venv\Scripts\activate.bat
 echo To run the app:
 echo   python main.py
 pause
