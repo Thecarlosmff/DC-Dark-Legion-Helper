@@ -613,7 +613,7 @@ class TabShardProbBanner(QWidget):#OK
         else:  # Pie chart 1-4
             funcs.draw_heros_pie_chart(
                 current_results,
-                chart_number  # pass 1-4 for specific pie chart
+                chart_number
             )
 class TabShardProbMythic(QWidget):#OK
     def __init__(self, params_panel, log_widget):
@@ -864,9 +864,6 @@ class TabLoadResults(QWidget):
         try:
             results, history, totals, meta = funcs.set_draws(path)
             self.log.append(f"Loaded {len(history)} draws from {path}")
-            # Optionally draw a pie/chart from results:
-            # draw_heros_pie_chart(results, "1")
-            # For demo, plot total per key:
             xs = list(range(len(results)))
             ys = list(results.values())
             self.canvas.clear()
