@@ -17,26 +17,13 @@
 #   legendary_legacy
 #   epic_champions
 #   epic_legacy
-"""
-How to create .exe file
-
-pip install PyInstaller
-
-pyinstaller DCDL_Bleed.py -F --onefile
-
-"""
-
 
 """
 
 1. The combined chance of obtaining a **Mythic** Champion or Legacy Piece is **3.84%**. You are guaranteed a **Mythic** Champion or Legacy Piece within **50 draws**.
-
 2. The combined chance of obtaining a **Legendary** Champion or Legacy Piece is **17.79%**. You are guaranteed a **Legendary or higher** rarity Champion or Legacy Piece within **10 draws**.
-
 3. Upon obtaining a **Mythic** Champion or Legacy Piece, there is a **26.9%** combined chance that it will be the limited **Mythic** Champion of the current event session. If you fail three times, the next **Mythic** Champion you obtain is guaranteed to be the **limited one**.
-
 4. Upon obtaining a **Mythic** Champion or Legacy Piece, there is a **50%** chance that it will be an odds-boosted **Mythic** Champion of the current event session.
-
 5. For the first **6 non-limited Mythic** Champions or Legacy Pieces obtained from each Hypertime Tracker, you'll receive **2, 3, or 5 shards** of the limited **Mythic** Champion of the current event session as a bonus with **65%**, **35%**, and **5%** chances, respectively. Starting with the **7th non-limited Mythic** Champion or Legacy Piece obtained, there is a **33%** chance to receive **2, 3, or 5 shards** of the limited **Mythic** Champion.
 
  """
@@ -50,8 +37,6 @@ from collections import defaultdict
 import mplcursors
 import pandas as pd
 from scipy.stats import skew, kurtosis
-#from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QMessageBox
-#import sys
 
 # Constants
 Mythic_RATE = 0.0384
@@ -145,7 +130,7 @@ def set_pull_list_to_default():
         "Dark with Poison Ivy poison", "Amazonium Alloy Shield", "T-Sphere Weakness Analyzer",
         "Gabriel Horn", "Duplication Mirror", "Tectonic Disruptor", "Promethium Claws",
         "Robot Duplicate", "Imp Doll", "Starheart Staff"
-    ]#Probably missing new ones...
+    ]
     legendary_champions = [
         "Black Adam", "Killer Croc", "Vixen", "Catwoman", "Captain Cold",
         "The Atom", "Mera", "Red Hood", "Green Arrow", "Wonder Woman"
@@ -181,7 +166,7 @@ def set_banner(selected_banner=""):
         "Martian Manhunter": ["Cyborg", "The Flash", "Shazam"],  # TODO THIS IS NOT CORRECT!!!!!!!!!!!!!!!
         "Stargirl": ["Arsenal", "The Penguin", "Poison Ivy"],
         "Ra's al Ghul": ["Cyborg", "Krypto", "Robin"],
-        "Talia": ["Bane", "Batgirl", "Harley Quinn"],
+        "Talia": ["Bane", "Batgirl", "Harley Quinn"], #TODO Hypo Missing
     }
 
     #ordered_banners = ["Superman", "Joker", "Scarecrow", "Deathstroke","Sinestro", "Zatanna", "Constantine", "Nightwing","Supergirl", "Superboy", "Hawkgirl", "Martian Manhunter","Stargirl", "Ra's al Ghul", "Talia"]
@@ -371,13 +356,9 @@ def simulate_multiple_sessions(
 
     # --- Build stats text ---
     if num_sessions == 1:
-        epic_total, legendary_total, Mythic_total = count_pulled()
         stats_lines.append(get_metadata(last_metadata))  # get key metadata
-        stats_lines.append(print_stats(legendary_total, Mythic_total, epic_total))
+        stats_lines.append(get_breakdown_text(True))
     else:
-        ignored_keys = {"Mythic pity reset at", "Legendary pity reset at", "Banner extra shards"}
-        #stats_lines.append(f"Pulled a total of {pulls_per_session * num_sessions} items across {num_sessions} sessions.")
-        #stats_lines.append(get_metadata(last_metadata, ignored_keys))
         stats_lines.append("\nLegendary+ Items Pulled:")
         legendary_plus_items = {
             item: count for item, count in aggregate_results.items()
@@ -411,76 +392,6 @@ def simulate_multiple_sessions(
         last_metadata,
         "\n".join(stats_lines)  # <-- the full statistics text
     )
-
-def print_stats(legendary_total, Mythic_total, epic_total): # get_breakdown_text() DOES THE SAME | OBSULENT FOR GUI
-    print("\nPull Breakdown by Character/Piece:")
-
-    temp_list = Mythic_champions.copy()
-    if banner_Mythic_champ not in temp_list:
-        temp_list.append(banner_Mythic_champ)
-    print("\nMythic Champions:")
-    for name in sorted(
-        temp_list,
-        key=lambda x: results.get(x, 0),
-        reverse=True
-    ):
-        count = results.get(name, 0)
-        if count > 0:
-            print(f"  {name}: {count}")
-
-    print("\nMythic Legacy Pieces:")
-    for name in sorted(
-        Mythic_legacy,
-        key=lambda x: results.get(x, 0),
-        reverse=True
-    ):
-        count = results.get(name, 0)
-        if count > 0:
-            print(f"  {name}: {count}")
-
-    print("\nLegendary Champions:")
-    for name in sorted(
-        legendary_champions,
-        key=lambda x: results.get(x, 0),
-        reverse=True
-    ):
-        count = results.get(name, 0)
-        if count > 0:
-            print(f"  {name}: {count}")
-
-    print("\nLegendary Legacy Pieces:")
-    for name in sorted(
-        legendary_legacy,
-        key=lambda x: results.get(x, 0),
-        reverse=True
-    ):
-        count = results.get(name, 0)
-        if count > 0:
-            print(f"  {name}: {count}")
-
-    print("\nEpic (Champions and Legacy Pieces):")
-    for name in sorted(
-        epic_champions + epic_legacy,
-        key=lambda x: results.get(x, 0),
-        reverse=True
-    ):
-        count = results.get(name, 0)
-        if count > 0:
-            print(f"  {name}: {count}")
-
-    print("\nSTATS:")
-    print(f"Legendary (Champions + Legacy pieces): {legendary_total}")
-    print(f"Mythic (Champions + Legacy pieces): {Mythic_total} (Banner {results.get(banner_Mythic_champ, 0)} times)")
-    print(f"Epic (total Champions + Legacy pieces): {epic_total}")
-    shards = 0
-    for entry in history:
-        if len(entry) == 3:
-            rarity, item, extra = entry
-        elif len(entry) == 2:
-            rarity, item = entry
-            extra = 0  # default
-        shards += extra
-    print(f"Extra {banner_Mythic_champ} shards: {shards}")
 def count_pulled():
     legendary_total = 0
     Mythic_total = 0
@@ -495,7 +406,7 @@ def count_pulled():
         elif item in epic_champions or item in epic_legacy:
             epic_total += count
     return epic_total,legendary_total,Mythic_total
-def draw_heros_pie_chart(results, chart_number=-1, ax=None):
+def draw_heros_pie_chart(results, chart_number=-1):
     if chart_number == -1:
         return
     if isinstance(chart_number, str):
@@ -627,19 +538,6 @@ def draw_heros_pie_chart(results, chart_number=-1, ax=None):
 
     plt.tight_layout()
     plt.show()
-def ask_charts_to_show():
-    print("\nWhich charts would you like to show?")
-    print("1 = Mythic Breakdown")
-    print("2 = Legendary Breakdown")
-    print("3 = Epic Breakdown")
-    print("4 = Overall Rarity Composition")
-    print("Example: '1,4' or '2,3' or '1,2,3,4'")
-    choice = input("Enter chart numbers (comma-separated): ").strip()
-
-    if not choice:
-        print("No charts selected. Returning...")
-        return -1  # default: nothing shown
-    return choice
 def shard_tracking(history, repeats=1):#Adapted for GUI
     
     shards = {
@@ -876,33 +774,6 @@ def format_shard_distribution_title(pulls_limit, current_shards=0, m_pity=0, l_p
     if extras:
         base += "\n" + ", ".join(extras)
     return base
-def plot_CDF(shard_arrays,simulations,titles,current=None): #NOT USED
-   
-    n = len(shard_arrays)
-    if n > 4:
-        print("Maximum of 4 distributions supported.")
-        return
-    if current is None:
-        current = [0] * n
-    colors= ["darkorange","dodgerblue","seagreen","crimson"]
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-
-    for i, (shard_array,title) in enumerate(zip(shard_arrays, titles)):
-        adjusted_shard_array = shard_array + current[i] #HOW DO I DO THIS !!!!!
-        sorted_shards = np.sort(adjusted_shard_array)
-        ccdf = 1 - (np.arange(1,simulations + 1)/ simulations)
-        #cdf = np.arange(1, simulations + 1) / simulations
-        ax.plot(sorted_shards,ccdf,label=title,color=colors[i%len(colors)])
-    ax.set_title( "Cumulation Distribution Function")
-    ax.set_xlabel("Shards")
-    ax.set_ylabel("Probalility")
-    ax.legend()
-    ax.grid(True)
-
-    plt.tight_layout()
-    plt.show()
 def shard_probability_multiple_pull_lengths(
     pulls_list="1040",
     simulations=10000,
@@ -977,7 +848,6 @@ def shard_probability_multiple_pull_lengths(
         shard_array = np.array(shard_list)
         all_arrays.append(shard_array)
 
-        # --- Capture stats instead of printing ---
         text_lines.append(f"\n--- Shards Distribution for {pulls_limit} pulls ({simulations} simulations) ---")
         if current_shards != 0:
             text_lines.append(f"------ Current Shards: {current_shards} ------")
@@ -1012,10 +882,6 @@ def shard_probability_multiple_pull_lengths(
         title = format_shard_distribution_title(pulls_limit,current_shards,m_pity,l_pity,pity_banner,non_limited_Mythics_in_current_banned)
         all_titles.append(title)
         print_text.append("\n".join(text_lines))
-
-    # Optional: plotting can remain
-    #plot_multiple_shard_distributions_banner(shard_arrays=all_arrays,titles=all_titles,starting_shards_list=[current_shards] * len(all_arrays))
-    #draw_heros_pie_chart(results, ask_charts_to_show())
     clean()
     return print_text,all_arrays,all_titles,([current_shards] * len(all_arrays)),list_of_results,list_of_history
 def plot_multiple_Mythic_distributions(arrays, pull_limits, chart_type=3): # adapted for GUI
