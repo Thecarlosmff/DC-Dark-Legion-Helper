@@ -4,7 +4,7 @@ Currently a bleed simulator for DC Dark Legion.
 ## Setup (Easy Mode)
 
 1. **Windows**  
-   - Double-click `setup_env.bat`  
+   - Double-click `setup_env_windows.bat`  
    - Wait until it finishes installing Python + dependencies  
    - Run:  
      ```
@@ -15,7 +15,7 @@ Currently a bleed simulator for DC Dark Legion.
 2. **Linux / macOS**  
    - Run in terminal:  
      ```bash
-     chmod +x setup_env.sh
+     chmod +x setup_env_mac-linux.sh
      ./setup_env.sh
      source venv/bin/activate
      python main.py
