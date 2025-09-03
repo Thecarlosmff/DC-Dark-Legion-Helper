@@ -20,13 +20,14 @@
 
 """
 
-1. The combined chance of obtaining a **Mythic** Champion or Legacy Piece is **3.84%**. You are guaranteed a **Mythic** Champion or Legacy Piece within **50 draws**.
-2. The combined chance of obtaining a **Legendary** Champion or Legacy Piece is **17.79%**. You are guaranteed a **Legendary or higher** rarity Champion or Legacy Piece within **10 draws**.
-3. Upon obtaining a **Mythic** Champion or Legacy Piece, there is a **26.9%** combined chance that it will be the limited **Mythic** Champion of the current event session. If you fail three times, the next **Mythic** Champion you obtain is guaranteed to be the **limited one**.
-4. Upon obtaining a **Mythic** Champion or Legacy Piece, there is a **50%** chance that it will be an odds-boosted **Mythic** Champion of the current event session.
-5. For the first **6 non-limited Mythic** Champions or Legacy Pieces obtained from each Hypertime Tracker, you'll receive **2, 3, or 5 shards** of the limited **Mythic** Champion of the current event session as a bonus with **65%**, **35%**, and **5%** chances, respectively. Starting with the **7th non-limited Mythic** Champion or Legacy Piece obtained, there is a **33%** chance to receive **2, 3, or 5 shards** of the limited **Mythic** Champion.
+The chances of obtaining Mythic and Legendary Champions or Legacy Pieces are as follows:
+The base chance of obtaining a Mythic Champion or Legacy Piece is 3% (3.84% combined with guarantees).You are guaranteed a Mythic Champion or Legacy Piece within 50 draws.
+The base chance of obtaining a Legendary Champion or Legacy Piece is 16% (17.79% combined with guarantees). You are guaranteed a Legendary or higher rarity Champion or Legacy Piece within 10 draws.
+Upon obtaining a Mythic Champion or Legacy Piece, there is a 5% base chance (26.9% combined with guarantees) that it will be the limited Mythic Champion of the current event session. If you fail three times, the next Mythic Champion you obtain is guaranteed to be the limited one.
+Upon obtaining a Mythic Champion or Legacy Piece, there is a 50% base chance (36.5% combined with guarantees) that it will be an odds-boosted, non-limited Mythic Champion of the current event session.
+For the first 6 non-limited Mythic Champions or Legacy Pieces obtained from each Hypertime Tracker, you'll receive 2, 3, or 5 shards of the limited Mythic Champion of the current event session as a bonus with 60%, 35%, and 5% chances, respectively. Starting with the 7th non-limited Mythic Champion or Legacy Piece obtained, there is a 33% chance to receive 2, 3, or 5 shards of the limited Mythic Champion.
 
- """
+"""
 import math
 import random
 import numpy as np
@@ -38,13 +39,13 @@ import mplcursors
 import pandas as pd
 from scipy.stats import skew, kurtosis
 
-# Constants
-Mythic_RATE = 0.0384
-LEGENDARY_RATE = 0.1779
-EPIC_RATE = 1 - (Mythic_RATE + LEGENDARY_RATE)
+# Constants 
+MYTHIC_RATE = 0.03 #0.0384
+LEGENDARY_RATE = 0.16 #0.1779
+EPIC_RATE = 1 - (MYTHIC_RATE + LEGENDARY_RATE)
 MYTHIC_GUARANTEE = 50
 LEGENDARY_GUARANTEE = 10
-MYTHIC_BANNER_CHANCE = 0.269
+MYTHIC_BANNER_CHANCE = 0.05 #0.269
 #LEGENDARY_BOOSTED_CHANCE = 0.5 #OBSULENT
 MYTHIC_BOOSTED_CHANCE = 0.5
 
@@ -53,8 +54,8 @@ MAX_BANNER_PITY = 3
 MAX_LEGENDARY_PITY = LEGENDARY_GUARANTEE - 1
 
 LEGACY_PIECE_CHANCE =  MYTHIC_BANNER_CHANCE + MYTHIC_BOOSTED_CHANCE + (1 - MYTHIC_BANNER_CHANCE - MYTHIC_BOOSTED_CHANCE) / 2
-SHARDS_2_ODDS = 0.65
-SHARDS_3_ODDS = 0.30 #THE VALUE IN GAME IS 35% HOWEVER THE TOTAL WOULD BE 105 % WHAT MAKES NO SENSE
+SHARDS_2_ODDS = 0.60
+SHARDS_3_ODDS = 0.35
 SHARDS_5_ODDS = 0.05
 SHARDS_EXTRA_ODDS = (1/3)
 ###################
@@ -172,7 +173,6 @@ def set_banner(selected_banner=""):
     #ordered_banners = ["Superman", "Joker", "Scarecrow", "Deathstroke","Sinestro", "Zatanna", "Constantine", "Nightwing","Supergirl", "Superboy", "Hawkgirl", "Martian Manhunter","Stargirl", "Ra's al Ghul", "Talia"]
     banner_Mythic_champ = selected_banner
     boosted_Mythic_champs = set(banner_boosted_map.get(selected_banner, []))
-
 def clean(m_pity=0, l_pity=0, non_banner_m_since_last=0,forced_m_count=0,forced_banner_m_count=0,res=Counter(),his=[],n_of_non_banner_m_pulls=0):
     global mythic_pity, legendary_pity, non_banner_Mythics_since_last,forced_Mythic_count,forced_banner_Mythic_count,results,history,numbers_of_non_banner_mysthic_pulls
     mythic_pity = m_pity
@@ -216,13 +216,13 @@ def draw(show_output = False,first_draw=False): # adapted for GUI
         rarity = 'Mythic'
         forced_Mythic_count += 1
     elif legendary_pity >= LEGENDARY_GUARANTEE:
-            if roll < Mythic_RATE:
+            if roll < MYTHIC_RATE:
                 rarity = 'Mythic'
             else:
                 rarity = 'Legendary'
-    elif roll < Mythic_RATE:
+    elif roll < MYTHIC_RATE:
         rarity = 'Mythic'
-    elif roll < Mythic_RATE + LEGENDARY_RATE:
+    elif roll < MYTHIC_RATE + LEGENDARY_RATE:
         rarity = 'Legendary'
     else:
         rarity = 'Epic'
@@ -860,10 +860,10 @@ def shard_probability_multiple_pull_lengths(
             text_lines.append(f"{mythics:>8}  {probability:8.2%}  {remaining:10.2%}")
             remaining -= probability
 
-        avg_Mythic_rate = total_Mythic_pulls / (pulls_limit * simulations)
-        avg_limited_Mythic_rate = total_limited_Mythic_pulls / (pulls_limit * simulations)
-        expected_pulls_per_Mythic = (1 / avg_Mythic_rate) if avg_Mythic_rate > 0 else float('inf')
-        expected_pulls_per_limited = (1 / avg_limited_Mythic_rate) if avg_limited_Mythic_rate > 0 else float('inf')
+        avg_MYTHIC_RATE = total_Mythic_pulls / (pulls_limit * simulations)
+        avg_limited_MYTHIC_RATE = total_limited_Mythic_pulls / (pulls_limit * simulations)
+        expected_pulls_per_Mythic = (1 / avg_MYTHIC_RATE) if avg_MYTHIC_RATE > 0 else float('inf')
+        expected_pulls_per_limited = (1 / avg_limited_MYTHIC_RATE) if avg_limited_MYTHIC_RATE > 0 else float('inf')
 
         text_lines.append("\n--- Summary Statistics ---")
         text_lines.append(f"Mean shards:     {np.mean(shard_array):.2f}")
@@ -873,9 +873,9 @@ def shard_probability_multiple_pull_lengths(
         text_lines.append(f"Min shards:      {np.min(shard_array)}")
         text_lines.append(f"Max shards:      {np.max(shard_array)}")
         text_lines.append(f"Std deviation:   {np.std(shard_array):.2f}")
-        text_lines.append(f"Avg Mythic Pull Rate:         {avg_Mythic_rate:.4%}")
+        text_lines.append(f"Avg Mythic Pull Rate:         {avg_MYTHIC_RATE:.4%}")
         text_lines.append(f"Expected pulls per Mythic:    {expected_pulls_per_Mythic:.2f}")
-        text_lines.append(f"Avg Limited Mythic Pull Rate: {avg_limited_Mythic_rate:.4%}")
+        text_lines.append(f"Avg Limited Mythic Pull Rate: {avg_limited_MYTHIC_RATE:.4%}")
         text_lines.append(f"Expected pulls per Limited:   {expected_pulls_per_limited:.2f}")
 
         # Title per plot
