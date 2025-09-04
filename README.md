@@ -35,7 +35,9 @@ Currently a bleed simulator for DC Dark Legion.
 
    ```bash
    pip install PyInstaller
-   pyinstaller --noconsole --onefile -F main.py
+   pyinstaller main.py -F --noconsole --onefile --add-data "icon.png;."
+   # in mac:
+      # pyinstaller main.py -F --noconsole --onefile --add-data "icon.png:."
    ```
 
 
