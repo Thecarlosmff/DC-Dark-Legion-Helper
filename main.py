@@ -1,5 +1,6 @@
 
 
+import os
 import sys
 from PyQt6.QtGui import QColor, QFont, QIcon
 import numpy as np
@@ -1012,8 +1013,6 @@ class TabShardSims(QWidget):
         self.progress_bar.setVisible(False)
         QMessageBox.critical(self, "Error", msg)
         self.log.append(f"Error: {msg}")
-
-
 class TabLoadResults(QWidget):
     def __init__(self, log_widget: QTextEdit):
         super().__init__()
@@ -1306,7 +1305,14 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("DC Dark Legion Bleed @ Thecarlosmff")
         self.resize(1200, 720)
-        self.setWindowIcon(QIcon("icon.png"))
+        
+        def resource_path(relative_path):
+            """ Get absolute path to resource (works for dev and for PyInstaller) """
+            if hasattr(sys, '_MEIPASS'):  # PyInstaller creates a temp folder
+                return os.path.join(sys._MEIPASS, relative_path)
+            return os.path.join(os.path.abspath("."), relative_path)
+
+        self.setWindowIcon(QIcon(resource_path("icon.png")))
 
         # Shared log and parameters panel
         self.log = LogPanel()
