@@ -21,6 +21,10 @@ from PyQt6.QtWidgets import (
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
 
+FAKE_BANNER_ODDS = 0.269
+FAKE_MYTHIC_ODDS =0.0384
+FAKE_LEGENDARY_ODDS = 0.1779
+
 class MatplotlibCanvas(FigureCanvas):
     def __init__(self, width=6, height=4, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi, tight_layout=True)
@@ -1180,9 +1184,24 @@ class TabLoadResults(QWidget):
             longest_no_banner = self.longest_streak(self.history, "Banner")
             general_lines.append(f"Longest streak without a Mythic: {longest_no_mythic}")
             general_lines.append(f"Longest streak without a Banner: {longest_no_banner}")
+            
+            expected_mythics = FAKE_MYTHIC_ODDS*total
+            expected_banner = (FAKE_MYTHIC_ODDS*FAKE_BANNER_ODDS)*total
+            expected_legendary = FAKE_LEGENDARY_ODDS*total
+
+            banner_only_count = self.meta.get('Banner Champion Count', 0)
+            general_lines.append(f"\nExpected Mythics: {expected_mythics:.2f} Actual: {mythic_count}")
+            general_lines.append(f"Expected Banner: {expected_banner:.2f} Actual: {banner_only_count}")
+            general_lines.append(f"Expected Legendaries: {expected_legendary:.2f} Actual: {legendary_count}")
+
+            general_lines.append(f"\nLuck Index (Mythics): {(mythic_count / expected_mythics*100 -100):.2f}%")
+            general_lines.append(f"Luck Index (Banner): {(banner_only_count / expected_banner*100 -100):.2f}%")
+            general_lines.append(f"Luck Index (Legendaries): {(legendary_count / expected_legendary*100 -100):.2f}%")
+
+
 
         self.stats_display.setPlainText("\n".join(general_lines))
-
+        
 
     def build_tbl(self):
         epic_piece_count = self.meta.get('Epic Piece Count', 0)
@@ -1320,12 +1339,12 @@ class MainWindow(QMainWindow):
         
         # Tabs corresponding to your CLI menu options
         tabs = QTabWidget()
-        tabs.addTab(TabDraw(self.log), "Draw") # 1 & 2
-        tabs.addTab(TabDrawSimulations(self.params_panel, self.log), "Simulate Draws") # 3 & 4
-        tabs.addTab(TabShardSims(self.params_panel, self.log), "Shards Goal") #7
-        tabs.addTab(TabProbBanner(self.params_panel, self.log), "Probability (Banner)") # 5
-        tabs.addTab(TabProbMythic(self.params_panel, self.log), "Probability (Mythics)") # 6
-        tabs.addTab(TabLoadResults(self.log), "Load Draws") #TODO NOT WORKING PROPERLY draw_heros_pie_chart
+        tabs.addTab(TabDraw(self.log), "Draw")
+        tabs.addTab(TabDrawSimulations(self.params_panel, self.log), "Simulate Draws")
+        tabs.addTab(TabShardSims(self.params_panel, self.log), "Shards Goal")
+        tabs.addTab(TabProbBanner(self.params_panel, self.log), "Probability (Banner)")
+        tabs.addTab(TabProbMythic(self.params_panel, self.log), "Probability (Mythics)")
+        tabs.addTab(TabLoadResults(self.log), "Load Draws")
 
         # --- Left Column Layout ---
         left = QVBoxLayout()
