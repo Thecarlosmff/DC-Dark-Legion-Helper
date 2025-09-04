@@ -1,1 +1,1 @@
-pyinstaller main.py -F --noconsole --onefile
+pyinstaller main.py -F --noconsole --onefile --add-data "icon.png;."
