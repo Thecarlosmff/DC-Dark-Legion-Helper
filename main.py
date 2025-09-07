@@ -636,9 +636,9 @@ class TabProbBanner(QWidget):#OK
     def on_simulation_done(self, result):
         self.pull_results, self.all_arrays, self.all_titles, self.starting_shards_list, self.results, _ = result
         self.pull_index = 0
+        self.running = False
         self.show_current_result()
-
-        self.stats_display.append("✅ Simulation complete!")
+        self.log.append("✅ Simulation complete!")
         self.btn_run.setText("Run")
         self.set_buttons_enabled(True)
         if hasattr(self, 'progress_bar'):
@@ -814,7 +814,7 @@ class TabProbMythic(QWidget):#OK
         self.pull_results, self.all_arrays, self.pull_limits = result
         self.pull_index = 0
         self.show_current_result()
-        self.stats_display.append("✅ Simulation complete!")
+        self.log.append("✅ Simulation complete!")
         self.running = False
         self.btn_run.setText("Run Simulation")
         self.set_buttons_enabled(True)
