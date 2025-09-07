@@ -274,10 +274,10 @@ class TabDraw(QWidget): #OK
 
         for _ in range(count):
             if self.first_draw:
-                pulled = funcs.draw(True, self.first_draw)
+                pulled = funcs.draw(self.first_draw)
                 self.first_draw = False
             else:
-                pulled = funcs.draw(True, self.first_draw)
+                pulled = funcs.draw(self.first_draw)
 
             # choose color based on rarity
             rarity = pulled[1]

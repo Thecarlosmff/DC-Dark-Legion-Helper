@@ -196,7 +196,7 @@ def get_extra_shards(numbers_of_non_banner_mysthic_pulls):
         else:
             extra_shards = 5 
     return extra_shards 
-def draw(show_output = False,first_draw=False): # adapted for GUI
+def draw(first_draw=False): # adapted for GUI
     global mythic_pity, legendary_pity, non_banner_Mythics_since_last,forced_Mythic_count,forced_banner_Mythic_count,numbers_of_non_banner_mysthic_pulls
     
     if first_draw:
@@ -274,11 +274,6 @@ def draw(show_output = False,first_draw=False): # adapted for GUI
             selected = random.choice(epic_legacy)
         results[selected] += 1
         history.append(('Epic', selected, 0))
-    if show_output:
-        if extra_shards == 0:
-            print(selected)
-        else:
-            print(f"{selected} + {extra_shards} {banner_Mythic_champ} shards")
 
     return selected,rarity,extra_shards
 def multi_draw(n=100,show_output=False): #extra shards updated
@@ -287,7 +282,7 @@ def multi_draw(n=100,show_output=False): #extra shards updated
     results = Counter()
     history = []
     for _ in range(n):
-        draw(show_output)
+        draw()
 
     category_totals = Counter({'Mythic': 0, 'Legendary': 0, 'Epic': 0})
     for rarity, _, extra in history:
@@ -820,9 +815,10 @@ def run_shard_simulations(
     stop_flag=lambda: True,       # stop flag for cancellation
     progress_callback=lambda val: None  # progress updates
 ):
+    global  mythic_pity, legendary_pity, non_banner_Mythics_since_last, numbers_of_non_banner_mysthic_pulls,session_params
     if shard_targets is None:
         shard_targets = [80, 120]
-
+    #print(f"({session_params[0]} , {session_params[1]} , {session_params[2]} , {session_params[3]})")
     values = []
     text_lines = []
     text_lines.append("\nSimulation Results Table:")
@@ -836,7 +832,12 @@ def run_shard_simulations(
 
         pull_counts = []
 
-        for _ in range(simulations):
+        for i in range(simulations):
+            mythic_pity = session_params[0]
+            legendary_pity = session_params[1]
+            non_banner_Mythics_since_last = session_params[2]
+            numbers_of_non_banner_mysthic_pulls = session_params[3]
+
             if not stop_flag():
                 # Cancel mid-simulation
                 text_lines.append("\n⚠️ Simulation cancelled by user.")
@@ -844,15 +845,15 @@ def run_shard_simulations(
 
             pulls_needed = 0
             shards_accum = 0
-
             while shards_accum < target:
                 # Simulate a single pull
                 selected, rarity, extra = draw()  # or your own pull function
                 pulls_needed += 1
-                if rarity == "Mythic":
+                #print(f"({mythic_pity} , {legendary_pity} , {non_banner_Mythics_since_last} , {numbers_of_non_banner_mysthic_pulls})")
+                if rarity == "Mythic" and selected in banner_Mythic_champions:
                     shards_accum += 40
-                    if selected != banner_Mythic_champions:
-                        shards_accum += extra
+                    shards_accum += extra
+            #print("Sim. {i} DONE")
 
             pull_counts.append(pulls_needed)
 
