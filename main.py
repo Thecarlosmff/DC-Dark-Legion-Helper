@@ -473,7 +473,13 @@ class TabDrawSimulations(QWidget):#OK
         for btn in [self.pie_button1, self.pie_button2, self.pie_button3, self.pie_button4]:
             btn.setEnabled(True)
 
-        self.last_results, _,_,_, all_history,_,stats_text = result
+        try:
+            self.last_results, _,_,_, all_history,_,stats_text = result
+        except Exception as e:
+                self.log.append(f"❌ Simulation failed: {e}")
+                self.stats_display.clear()
+                return
+        
         num_sessions = self.sessions_input.value()
         pulls_per_session = self.pulls_input.value()
 
@@ -634,12 +640,19 @@ class TabProbBanner(QWidget):#OK
         self.worker.start()
 
     def on_simulation_done(self, result):
-        self.pull_results, self.all_arrays, self.all_titles, self.starting_shards_list, self.results, _ = result
         self.pull_index = 0
         self.running = False
+        self.btn_run.setText("Run")
+        
+        try:
+            self.pull_results, self.all_arrays, self.all_titles, self.starting_shards_list, self.results, _ = result
+        except Exception as e:
+                self.log.append(f"❌ Simulation failed: {e}")
+                self.set_buttons_enabled(False)
+                self.show_current_result()
+                return
         self.show_current_result()
         self.log.append("✅ Simulation complete!")
-        self.btn_run.setText("Run")
         self.set_buttons_enabled(True)
         if hasattr(self, 'progress_bar'):
             self.progress_bar.setVisible(False)
@@ -663,6 +676,7 @@ class TabProbBanner(QWidget):#OK
         self.log.append("Simulation cancelled.")
     def show_current_result(self):
         if not self.pull_results:
+            self.stats_display.clear()
             return
         self.stats_display.clear()
         self.stats_display.append(self.pull_results[self.pull_index])
@@ -811,14 +825,20 @@ class TabProbMythic(QWidget):#OK
         self.worker.start()
 
     def on_simulation_done(self, result):
-        self.pull_results, self.all_arrays, self.pull_limits = result
+        self.running = False
+        self.btn_run.setText("Run Simulation")
+        self.progress_bar.setVisible(False)
+
+        try:
+            self.pull_results, self.all_arrays, self.pull_limits = result
+        except Exception as e:
+            self.log.append(f"❌ Simulation failed: {e}")            
+            self.set_buttons_enabled(False)
+            self.show_current_result()
+            return
         self.pull_index = 0
         self.show_current_result()
         self.log.append("✅ Simulation complete!")
-        self.running = False
-        self.btn_run.setText("Run Simulation")
-        self.set_buttons_enabled(True)
-        self.progress_bar.setVisible(False)
 
     def on_simulation_error(self, error_msg):
         self.stats_display.append(f"❌ Error: {error_msg}")
@@ -844,6 +864,7 @@ class TabProbMythic(QWidget):#OK
 
     def show_current_result(self):
         if not self.pull_results:
+            self.stats_display.clear()
             return
         self.stats_display.clear()
         self.stats_display.append(self.pull_results[self.pull_index])
@@ -970,8 +991,11 @@ class TabShardSims(QWidget):
         self.running = False
         self.btn_run.setText("Run Shard Goal Simulations")
         self.progress_bar.setVisible(False)
-
-        text_output, values, shard_targets = result
+        try:
+            text_output, values, shard_targets = result
+        except Exception as e:
+                self.log.append(f"❌ Simulation failed: {e}")
+                return
         self.log.append("Simulation complete!")
         self.stats_display.clear()
         self.stats_display.append(text_output)
@@ -1102,6 +1126,10 @@ class TabLoadResults(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
             self.log.append(f"Error loading file: {e}")
+    def format_luck_index(self, value):
+        color = "green" if value >= 0 else "red"
+        sign = "+" if value >= 0 else ""
+        return f"<span style='color:{color};'>{sign}{value:.2f}%</span>"
     def right_panel(self):
         # --- Right panel: Counts per item ---
             groups = {
@@ -1116,7 +1144,8 @@ class TabLoadResults(QWidget):
 
             for champ, count in self.results.items():
                 if champ in epic_pool:
-                    groups["Epic"].append((champ, count))
+                    pass
+                    #groups["Epic"].append((champ, count))
                 elif champ in legendary_pool:
                     groups["Legendary"].append((champ, count))
                 elif champ in mythic_pool:
@@ -1130,12 +1159,14 @@ class TabLoadResults(QWidget):
                 "Legendary": "#FFBF00",
                 "Epic": "purple",
             }
-
             html_lines = []
             for group_name, items in groups.items():
                 if not items:
                     continue
-                html_lines.append(f"<b>{group_name}</b><br>")
+
+                total = sum(count for _, count in items)
+                html_lines.append(f"<b>{group_name} - {total}</b><br>")
+
                 for champ, count in sorted(items, key=lambda x: -x[1]):
                     color = colors.get(group_name, "black")
                     html_lines.append(f"<span style='color:{color}'>{champ}</span>: {count}<br>")
@@ -1147,59 +1178,57 @@ class TabLoadResults(QWidget):
         avg_banner = self.meta.get("Average pulls per banner")
         avg_mythic = self.meta.get("Average pulls per mythic")
 
-        # --- Left panel: General stats ---
-        general_lines = []
-        general_lines.append("=== Loaded Draw Statistics ===\n")
-        general_lines.append(f"Total draws: {len(self.history)}")
-        general_lines.append(f"Mythic pity counter: {self.meta.get('Mythic pity reset at', 'Unknown')}")
-        general_lines.append(f"Legendary pity counter: {self.meta.get('Legendary pity reset at', 'Unknown')}")
-        general_lines.append(f"Forced Mythics: {self.meta.get('Forced Mythics', 0)}")
-        general_lines.append(f"Forced Banner Mythics: {self.meta.get('Forced Banner', 0)}")
-        general_lines.append(f"Normal Banner pulls: {self.meta.get('Normal Banner', 0)}")
-        general_lines.append(f"Forced Legendary: {self.meta.get('Forced Legendary', 0)}")
-        general_lines.append(
-            f"Average pulls per banner: {avg_banner:.2f}" if isinstance(avg_banner, (int, float)) 
-            else "Average pulls per banner: N/A"
+        html_lines = []
+        html_lines.append("<h3>🎲 Loaded Draw Statistics</h3>")
+        html_lines.append(f"• <b>Total draws:</b> {len(self.history)}<br>")
+        html_lines.append(f"• <b>Mythic pity counter:</b> {self.meta.get('Mythic pity reset at', 'Unknown')}<br>")
+        html_lines.append(f"• <b>Legendary pity counter:</b> {self.meta.get('Legendary pity reset at', 'Unknown')}<br>")
+        html_lines.append(f"• <b>Forced Mythics:</b> {self.meta.get('Forced Mythics', 0)}<br>")
+        html_lines.append(f"• <b>Forced Banner Mythics:</b> {self.meta.get('Forced Banner', 0)}<br>")
+        html_lines.append(f"• <b>Normal Banner pulls:</b> {self.meta.get('Normal Banner', 0)}<br>")
+        html_lines.append(f"• <b>Forced Legendary:</b> {self.meta.get('Forced Legendary', 0)}<br>")
+        html_lines.append(
+            f"• <b>Average pulls per banner:</b> {avg_banner:.2f}<br>" if isinstance(avg_banner, (int, float)) 
+            else "• <b>Average pulls per banner:</b> N/A<br>"
         )
-        general_lines.append(
-            f"Average pulls per mythic: {avg_mythic:.2f}" if isinstance(avg_mythic, (int, float)) 
-            else "Average pulls per mythic: N/A"
+        html_lines.append(
+            f"• <b>Average pulls per mythic:</b> {avg_mythic:.2f}<br>" if isinstance(avg_mythic, (int, float)) 
+            else "• <b>Average pulls per mythic:</b> N/A<br>"
         )
 
-        # Quality of Life
         total = len(self.history)
         if total > 0:
             mythic_count = self.totals["Mythic"]
             legendary_count = self.totals["Legendary"]
             epic_count = self.totals["Epic"]
 
-            general_lines.append("\n=== Quality of Life Stats ===\n")
-            general_lines.append(f"Mythic: {mythic_count / total * 100:.2f}%")
-            general_lines.append(f"Legendary: {legendary_count / total * 100:.2f}%")
-            general_lines.append(f"Epic: {epic_count / total * 100:.2f}%")
+            html_lines.append("<h3>📊 Quality of Life Stats</h3>")
+            html_lines.append(f"• Mythic: {mythic_count / total * 100:.2f}%<br>")
+            html_lines.append(f"• Legendary: {legendary_count / total * 100:.2f}%<br>")
+            html_lines.append(f"• Epic: {epic_count / total * 100:.2f}%<br>")
 
-            # Longest streaks
             longest_no_mythic = self.longest_streak(self.history, "Mythic")
             longest_no_banner = self.longest_streak(self.history, "Banner")
-            general_lines.append(f"Longest streak without a Mythic: {longest_no_mythic}")
-            general_lines.append(f"Longest streak without a Banner: {longest_no_banner}")
-            
-            expected_mythics = FAKE_MYTHIC_ODDS*total
-            expected_banner = (FAKE_MYTHIC_ODDS*FAKE_BANNER_ODDS)*total
-            expected_legendary = FAKE_LEGENDARY_ODDS*total
+            html_lines.append(f"• 🔥 Longest streak without a Mythic: <b>{longest_no_mythic}</b><br>")
+            html_lines.append(f"• 🔥 Longest streak without a Banner: <b>{longest_no_banner}</b><br>")
 
+            expected_mythics = FAKE_MYTHIC_ODDS * total
+            expected_banner = (FAKE_MYTHIC_ODDS * FAKE_BANNER_ODDS) * total
+            expected_legendary = FAKE_LEGENDARY_ODDS * total
             banner_only_count = self.meta.get('Banner Champion Count', 0)
-            general_lines.append(f"\nExpected Mythics: {expected_mythics:.2f} Actual: {mythic_count}")
-            general_lines.append(f"Expected Banner: {expected_banner:.2f} Actual: {banner_only_count}")
-            general_lines.append(f"Expected Legendaries: {expected_legendary:.2f} Actual: {legendary_count}")
 
-            general_lines.append(f"\nLuck Index (Mythics): {(mythic_count / expected_mythics*100 -100):.2f}%")
-            general_lines.append(f"Luck Index (Banner): {(banner_only_count / expected_banner*100 -100):.2f}%")
-            general_lines.append(f"Luck Index (Legendaries): {(legendary_count / expected_legendary*100 -100):.2f}%")
+            html_lines.append("<h3>📈 Expected vs Actual</h3>")
+            html_lines.append(f"• Mythics → Expected: {expected_mythics:.2f}, Actual: {mythic_count}<br>")
+            html_lines.append(f"• Banner → Expected: {expected_banner:.2f}, Actual: {banner_only_count}<br>")
+            html_lines.append(f"• Legendaries → Expected: {expected_legendary:.2f}, Actual: {legendary_count}<br>")
 
+            html_lines.append("<h3>🍀 Luck Index</h3>")
+            html_lines.append(f"• Mythics: {self.format_luck_index(mythic_count / expected_mythics * 100 - 100)}<br>")
+            html_lines.append(f"• Banner: {self.format_luck_index(banner_only_count / expected_banner * 100 - 100)}<br>")
+            html_lines.append(f"• Legendaries: {self.format_luck_index(legendary_count / expected_legendary * 100 - 100)}<br>")
 
+        self.stats_display.setHtml("".join(html_lines))
 
-        self.stats_display.setPlainText("\n".join(general_lines))
         
 
     def build_tbl(self):
@@ -1287,6 +1316,7 @@ class TabLoadResults(QWidget):
         # --- Row 6 ---
         set_cell(5, 0, "Average number of Pulls per Mythic+:","Red2")
         set_cell(5, 4, f"{(len(self.history)/banner_only_count):.2f}","Red2")
+   
 
 
      
