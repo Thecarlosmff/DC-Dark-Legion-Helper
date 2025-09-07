@@ -37,7 +37,7 @@ from collections import Counter
 from collections import defaultdict
 import mplcursors
 import pandas as pd
-from scipy.stats import skew, kurtosis
+#from scipy.stats import skew, kurtosis
 
 # Constants 
 MYTHIC_RATE = 0.03 #0.0384
@@ -277,7 +277,7 @@ def draw(first_draw=False): # adapted for GUI
         history.append(('Epic', selected, 0))
 
     return selected,rarity,extra_shards
-def multi_draw(n=100,show_output=False): #extra shards updated
+def multi_draw(n=100): #extra shards updated
     global results, history
     count_extra_shards = 0 
     results = Counter()
@@ -300,7 +300,6 @@ def multi_draw(n=100,show_output=False): #extra shards updated
 def simulate_multiple_sessions(
         num_sessions=1,
         pulls_per_session=100,
-        show_output=True,
         m_pity=None, l_pity=None,
         pity_banner=None,
         non_limited_Mythics_in_current_banned=None,
@@ -326,7 +325,7 @@ def simulate_multiple_sessions(
     all_history = []
     last_metadata = None
 
-    stats_lines = []  # <-- Accumulate output here
+    stats_lines = []  # <-- output here
 
     for i in range(num_sessions):
         if not stop_flag():
@@ -877,9 +876,11 @@ def show_pulls_for_shards(values): #works on GUI
         median = np.median(pulls)
         q1 = np.percentile(pulls, 25)
         q3 = np.percentile(pulls, 75)
+        qa = np.percentile(pulls, 12.5)
+        qb = np.percentile(pulls, 87.5)
         std_dev = np.std(pulls)
-        skew = ((pulls - avg)**3).mean() / (std_dev**3)
-        kurtosis = ((pulls - avg)**4).mean() / (std_dev**4) - 3
+        #skew = ((pulls - avg)**3).mean() / (std_dev**3)
+        #kurtosis = ((pulls - avg)**4).mean() / (std_dev**4) - 3
 
         plt.figure(figsize=(10, 6))
 
@@ -895,14 +896,15 @@ def show_pulls_for_shards(values): #works on GUI
         plt.axhline(y=max_pulls, color="orange", linestyle="--", label=f"Max: {max_pulls}")
 
         # Shaded bands
-        plt.fill_between([0, len(pulls)], avg - std_dev, avg + std_dev, color="green", alpha=0.2, label=f"Std Dev: {std_dev:.2f}")
-        plt.fill_between([0, len(pulls)], q1, q3, color="blue", alpha=0.2, label=f"IQR (Q1–Q3): {q1:.2f}-{q3:.2f}")
+        plt.fill_between([0, len(pulls)], avg - std_dev, avg + std_dev, color="green", alpha=0.3, label=f"Std Dev: {std_dev:.2f}")
+        #plt.fill_between([0, len(pulls)], q1, q3, color="darkblue", alpha=0.3, label=f"IQR (Q1–Q3): {q1:.2f}-{q3:.2f}")
+        plt.fill_between([0, len(pulls)], qa, qb, color="darkblue", alpha=0.3, label=f"75% of Pulls:: {qa:.2f}-{qb:.2f}")
 
         plt.xlabel("Simulation Run")
         plt.ylabel("Number of Pulls")
-        plt.title(f"Pulls Distribution for {target} Shards\n"
-                  f"Skewness: {skew:.2f} (Positive → More pulls above average)\n"
-                  f"Kurtosis: {kurtosis:.2f} (Positive → More extreme values)")
+        plt.title(f"Pulls Distribution for {target} Shards\n")
+                  #f"Skewness: {skew:.2f} (Positive → More pulls above average)\n"
+                  #f"Kurtosis: {kurtosis:.2f} (Positive → More extreme values)")
         plt.legend()
         plt.grid(True, linestyle="--", alpha=0.6)
         plt.tight_layout()

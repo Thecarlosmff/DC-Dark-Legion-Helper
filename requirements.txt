@@ -3,4 +3,3 @@ numpy
 matplotlib
 mplcursors
 pandas
-scipy

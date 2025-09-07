@@ -455,7 +455,6 @@ class TabDrawSimulations(QWidget):#OK
             funcs.simulate_multiple_sessions,
             num_sessions,
             pulls_per_session,
-            show_output=True,
         )
         self.worker.progress.connect(self.progress_bar.setValue)
         self.progress_bar.setRange(0, 100)   # switch to percentage
