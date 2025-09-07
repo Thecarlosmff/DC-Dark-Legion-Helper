@@ -124,7 +124,7 @@ def set_pull_list_to_default():
     banner_Mythic_champions = [
         "Superman", "Joker", "Sinestro", "Constantine", "Zatanna","Deathstroke",
         "Nightwing", "Hawkgirl", "Scarecrow","Martian Manhunter","Starfire","Supergirl","Superboy","Ra's al Ghul",
-        "Talia"
+        "Talia","Hippolyta"
     ]
     Mythic_legacy = [
         "Purple Ray Radiation", "Modified Joker Venom Grenade", "Mind Control Hat",
@@ -164,10 +164,11 @@ def set_banner(selected_banner=""):
         "Supergirl": ["Aquaman", "The Flash", "Shazam"],
         "Superboy": ["The Flash", "Raven", "Two-Face"],
         "Hawkgirl": ["Aquaman", "Black Canary", "Harley Quinn"],
-        "Martian Manhunter": ["Cyborg", "The Flash", "Shazam"],  # TODO THIS IS NOT CORRECT!!!!!!!!!!!!!!!
+        "Martian Manhunter": ["Arsenal", "Stargirl", "Bane"],
         "Stargirl": ["Arsenal", "The Penguin", "Poison Ivy"],
         "Ra's al Ghul": ["Cyborg", "Krypto", "Robin"],
-        "Talia": ["Bane", "Batgirl", "Harley Quinn"], #TODO Hypo Missing
+        "Talia": ["Bane", "Batgirl", "Harley Quinn"],
+        "Hippolyta":["Harley Quinn","Two-Face","Deadshot"]
     }
 
     #ordered_banners = ["Superman", "Joker", "Scarecrow", "Deathstroke","Sinestro", "Zatanna", "Constantine", "Nightwing","Supergirl", "Superboy", "Hawkgirl", "Martian Manhunter","Stargirl", "Ra's al Ghul", "Talia"]
@@ -832,7 +833,7 @@ def run_shard_simulations(
 
         pull_counts = []
 
-        for i in range(simulations):
+        for _ in range(simulations):
             mythic_pity = session_params[0]
             legendary_pity = session_params[1]
             non_banner_Mythics_since_last = session_params[2]
@@ -847,13 +848,13 @@ def run_shard_simulations(
             shards_accum = 0
             while shards_accum < target:
                 # Simulate a single pull
-                selected, rarity, extra = draw()  # or your own pull function
+                selected, rarity, extra = draw()
                 pulls_needed += 1
                 #print(f"({mythic_pity} , {legendary_pity} , {non_banner_Mythics_since_last} , {numbers_of_non_banner_mysthic_pulls})")
                 if rarity == "Mythic" and selected in banner_Mythic_champions:
                     shards_accum += 40
                     shards_accum += extra
-            #print("Sim. {i} DONE")
+            #print(f"Sim. {i} DONE")
 
             pull_counts.append(pulls_needed)
 
