@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import (
 )
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
-
+from PyQt6.QtGui import QClipboard
 FAKE_BANNER_ODDS = 0.269
 FAKE_MYTHIC_ODDS =0.0384
 FAKE_LEGENDARY_ODDS = 0.1779
@@ -208,6 +208,7 @@ class TabDraw(QWidget): #OK
         self.draw_custom_button = QPushButton("Draw (X)")
 
         self.reset_button = QPushButton("Reset")
+        self.export_button = QPushButton("Export")
         self.pie_button1 = QPushButton("Mythic")
         self.pie_button2 = QPushButton("Legendary")
         self.pie_button3 = QPushButton("Epic")
@@ -230,6 +231,7 @@ class TabDraw(QWidget): #OK
 
         bottom_buttons_layout = QHBoxLayout()
         bottom_buttons_layout.addWidget(self.reset_button, 1)
+        bottom_buttons_layout.addWidget(self.export_button,1)
 
         pie_buttons_layout = QHBoxLayout()
         pie_buttons_layout.addWidget(self.pie_button1, 1)
@@ -257,7 +259,7 @@ class TabDraw(QWidget): #OK
         self.pie_button2.clicked.connect(lambda: self.finish(2))
         self.pie_button3.clicked.connect(lambda: self.finish(3))
         self.pie_button4.clicked.connect(lambda: self.finish(4))
-
+        self.export_button.clicked.connect(lambda: self.show_results_in_new_window())
 
     def log(self, msg: str):
         if self.log_panel:
@@ -300,6 +302,7 @@ class TabDraw(QWidget): #OK
     def finish(self,btn):
         chart_choice = btn
         funcs.draw_heros_pie_chart(funcs.results, chart_choice)
+
     def show_results_in_new_window(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Session Results")
@@ -309,27 +312,33 @@ class TabDraw(QWidget): #OK
         
         text_edit = QTextEdit()
         text_edit.setReadOnly(True)
-        
-        # Add the session stats
-        text_edit.append("📊 Session Results")
-        for value in [funcs.mythic_pity, funcs.legendary_pity, 
-                    funcs.non_banner_Mythics_since_last, funcs.numbers_of_non_banner_mysthic_pulls]:
-            text_edit.append(str(value))
-        
-        # Add the breakdown
-        breakdown_text = funcs.get_breakdown_text()
-        text_edit.append("\n" + breakdown_text)
+
+        # --- Display draws in the order they happened (names only) ---
+        if funcs.history:
+            #text_edit.append("=== Draw Order ===\n")
+            for rarity, selected, extra in funcs.history:
+                text_edit.append(selected)  # just the name
+            text_edit.append("\n")  # spacing
+
         
         layout.addWidget(text_edit)
 
-        # Optional close button
+        # Buttons
+        copy_btn = QPushButton("Copy to Clipboard")
+        copy_btn.clicked.connect(lambda: QApplication.clipboard().setText(text_edit.toPlainText()))
+
         close_btn = QPushButton("Close")
         close_btn.clicked.connect(dialog.accept)
+
+        layout.addWidget(copy_btn)
         layout.addWidget(close_btn)
 
         dialog.exec()
     def update_breakdown(self):
         """Update right-side breakdown live"""
+        scrollbar = self.results_display.verticalScrollBar()
+        current_pos = scrollbar.value()
+
         self.results_display.clear()
         self.results_display.append("📊 Session Results")
         self.results_display.append("Pulls: " + str(len(funcs.history)))
@@ -343,6 +352,10 @@ class TabDraw(QWidget): #OK
         # --- Text ---
         breakdown_text = funcs.get_breakdown_text()
         self.results_display.append("\n" + breakdown_text)
+
+        # Restore scroll position (prevents auto-scroll to bottom)
+        scrollbar.setValue(current_pos)
+
     def reset(self):
         """Reset simulation + reload params panel"""
         # 1. Reset simulation values
@@ -1202,27 +1215,27 @@ class TabLoadResults(QWidget):
             legendary_count = self.totals["Legendary"]
             epic_count = self.totals["Epic"]
 
-            html_lines.append("<h3>📊 Quality of Life Stats</h3>")
+            html_lines.append("<h3>QoL Stats</h3>")
             html_lines.append(f"• Mythic: {mythic_count / total * 100:.2f}%<br>")
             html_lines.append(f"• Legendary: {legendary_count / total * 100:.2f}%<br>")
             html_lines.append(f"• Epic: {epic_count / total * 100:.2f}%<br>")
 
             longest_no_mythic = self.longest_streak(self.history, "Mythic")
             longest_no_banner = self.longest_streak(self.history, "Banner")
-            html_lines.append(f"• 🔥 Longest streak without a Mythic: <b>{longest_no_mythic}</b><br>")
-            html_lines.append(f"• 🔥 Longest streak without a Banner: <b>{longest_no_banner}</b><br>")
+            html_lines.append(f"• Longest streak without a Mythic: <b>{longest_no_mythic}</b><br>")
+            html_lines.append(f"• Longest streak without a Banner: <b>{longest_no_banner}</b><br>")
 
             expected_mythics = FAKE_MYTHIC_ODDS * total
             expected_banner = (FAKE_MYTHIC_ODDS * FAKE_BANNER_ODDS) * total
             expected_legendary = FAKE_LEGENDARY_ODDS * total
             banner_only_count = self.meta.get('Banner Champion Count', 0)
 
-            html_lines.append("<h3>📈 Expected vs Actual</h3>")
+            html_lines.append("<h3>Expected vs Actual</h3>")
             html_lines.append(f"• Mythics → Expected: {expected_mythics:.2f}, Actual: {mythic_count}<br>")
             html_lines.append(f"• Banner → Expected: {expected_banner:.2f}, Actual: {banner_only_count}<br>")
             html_lines.append(f"• Legendaries → Expected: {expected_legendary:.2f}, Actual: {legendary_count}<br>")
 
-            html_lines.append("<h3>🍀 Luck Index</h3>")
+            html_lines.append("<h3>Luck Index</h3>")
             html_lines.append(f"• Mythics: {self.format_luck_index(mythic_count / expected_mythics * 100 - 100)}<br>")
             html_lines.append(f"• Banner: {self.format_luck_index(banner_only_count / expected_banner * 100 - 100)}<br>")
             html_lines.append(f"• Legendaries: {self.format_luck_index(legendary_count / expected_legendary * 100 - 100)}<br>")
