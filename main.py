@@ -381,7 +381,7 @@ class TabDrawSimulations(QWidget):#OK
         # --- Inputs for sessions / pulls ---
         self.sessions_input = QSpinBox()
         self.sessions_input.setRange(1, 100000)
-        self.sessions_input.setValue(10000)
+        self.sessions_input.setValue(2500)
         self.pulls_input = QSpinBox()
         self.pulls_input.setRange(1, 100000)
         self.pulls_input.setValue(200)
@@ -543,7 +543,7 @@ class TabProbBanner(QWidget):#OK
         self.pull_index = 0
 
         # --- Inputs ---
-        self.pulls_input = QLineEdit("100,200")
+        self.pulls_input = QLineEdit("200")
         pulls_label = QLabel("Pull Lengths (comma-separated):")
         input_layout = QHBoxLayout()
         input_layout.addWidget(pulls_label)
@@ -559,7 +559,7 @@ class TabProbBanner(QWidget):#OK
 
         self.repeats_input = QSpinBox()
         self.repeats_input.setRange(1, 100000)
-        self.repeats_input.setValue(5000)
+        self.repeats_input.setValue(2500)
         repeats_label = QLabel("Simulations per Pull Length:")
         repeats_layout = QHBoxLayout()
         repeats_layout.addWidget(repeats_label)
@@ -748,7 +748,7 @@ class TabProbMythic(QWidget):#OK
 
         self.repeats_input = QSpinBox()
         self.repeats_input.setRange(1, 100000)  # set sensible limits
-        self.repeats_input.setValue(5000)
+        self.repeats_input.setValue(2500)
         repeats_label = QLabel("Simulations per Pull Length:")
         repeats_layout = QHBoxLayout()
         repeats_layout.addWidget(repeats_label)
@@ -816,8 +816,8 @@ class TabProbMythic(QWidget):#OK
         self.stats_display.append("Running Mythic probability simulation...")
         self.log.append(f"Running Mythic probability for pulls {self.pull_limits} with {repeats} repeats")
 
-        # --- Disable UI while running ---
-        self.set_buttons_enabled(False)  # helper method like before
+        # --- Disable UI ---
+        self.set_buttons_enabled(False)
         self.btn_run.setText("Cancel Simulation")
         self.progress_bar.setVisible(True)
         self.progress_bar.setRange(0, 100)
@@ -849,6 +849,7 @@ class TabProbMythic(QWidget):#OK
             self.set_buttons_enabled(False)
             self.show_current_result()
             return
+        self.set_buttons_enabled(True)
         self.pull_index = 0
         self.show_current_result()
         self.log.append("✅ Simulation complete!")
@@ -858,7 +859,7 @@ class TabProbMythic(QWidget):#OK
         self.log.append(f"Simulation error: {error_msg}")
         self.running = False
         self.btn_run.setText("Run Simulation")
-        self.set_buttons_enabled(True)
+        #self.set_buttons_enabled(True)
         self.progress_bar.setVisible(False)
 
     def on_simulation_cancelled(self):
@@ -866,7 +867,7 @@ class TabProbMythic(QWidget):#OK
         self.log.append("Simulation cancelled.")
         self.running = False
         self.btn_run.setText("Run Simulation")
-        self.set_buttons_enabled(True)
+        #self.set_buttons_enabled(True)
         self.progress_bar.setVisible(False)
 
     # --- Helper to enable/disable buttons ---
@@ -911,10 +912,10 @@ class TabShardSims(QWidget):
         self.log = log_widget
 
         self.simulations = QSpinBox()
-        self.simulations.setRange(1, 500000)
-        self.simulations.setValue(10000)
+        self.simulations.setRange(1, 100000)
+        self.simulations.setValue(2500)
 
-        self.targets_input = QLineEdit("80,120,200")
+        self.targets_input = QLineEdit("240")
         self.success_input = QLineEdit("")  # optional thresholds
 
         self.btn_run = QPushButton("Run Shard Goal Simulations")
