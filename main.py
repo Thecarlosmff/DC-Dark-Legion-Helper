@@ -2,7 +2,7 @@
 
 import os
 import sys
-from PyQt6.QtGui import QColor, QFont, QIcon
+from PyQt6.QtGui import QColor, QFont, QIcon,QClipboard
 import numpy as np
 import matplotlib
 matplotlib.use("QtAgg")
@@ -20,7 +20,6 @@ from PyQt6.QtWidgets import (
 )
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QClipboard
 FAKE_BANNER_ODDS = 0.269
 FAKE_MYTHIC_ODDS =0.0384
 FAKE_LEGENDARY_ODDS = 0.1779
@@ -112,7 +111,6 @@ class Worker(QThread):
         except Exception as e:
             self.error.emit(str(e))
 
-
 # ---------- Parameter Panel ----------
 class ParametersPanel(QWidget):
     def __init__(self):
@@ -187,7 +185,6 @@ class ParametersPanel(QWidget):
 
     def refresh_info(self):
         self.boosted_label.setText(f"Boosted Champs: {', '.join(funcs.boosted_Mythic_champs)}")
-
 
 # ---------- Tabs ----------
 
@@ -1429,8 +1426,6 @@ class MainWindow(QMainWindow):
         layout.addLayout(left, stretch=2)
         layout.addWidget(tabs, stretch=7)
         self.setCentralWidget(central)
-
-
 def main():
     app = QApplication(sys.argv)
     funcs.set_pull_list_to_default()
@@ -1438,7 +1433,6 @@ def main():
     win = MainWindow()
     win.show()
     sys.exit(app.exec())
-
 
 if __name__ == "__main__":
     main()
